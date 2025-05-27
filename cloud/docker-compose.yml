@@ -1,0 +1,22 @@
+version: "3.9"
+services:
+  api:
+    build: ./api
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_URL=postgresql+asyncpg://book:book@db:5432/books
+    depends_on:
+      - db
+
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: books
+      POSTGRES_USER: book
+      POSTGRES_PASSWORD: book
+    volumes:
+      - data:/var/lib/postgresql/data
+
+volumes:
+  data:
