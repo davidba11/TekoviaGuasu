@@ -1,0 +1,26 @@
+.states
+# Bases de datos SQLite u otros ficheros *.db
+*.db
+
+# Bytecode y artefactos de Python
+*.py[cod]
+__pycache__/
+
+# Archivos de estado o caches propias
+.states/
+
+.web
+
+# Archivos o carpetas generadas por tu app
+public/facturas/
+assets/external/
+
+# Migraciones de Alembic (si prefieres no versionarlas)
+alembic/
+
+# Entornos virtuales de Python  ────────────────────────────
+#   – Ignora cualquier carpeta llamada .venv, venv o .env
+#   – Funciona en cualquier profundidad del árbol
+**/.venv/
+**/venv/
+**/.env/
