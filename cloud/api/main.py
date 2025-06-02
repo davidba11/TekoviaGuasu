@@ -1,39 +1,48 @@
-from fastapi import FastAPI
-from sqlmodel import SQLModel, Field, Session, create_engine, select
+from fastapi import FastAPI, HTTPException
+from sqlmodel import SQLModel, Session, select, create_engine
 from pydantic import BaseModel
+
+# ---------------- configuración BD ----------------
 import os
 
-DB = os.getenv(
+DB_URL = os.getenv(
     "DB_URL",
-    "postgresql+asyncpg://book:book@db:5432/books"
+    "postgresql+psycopg2://postgres:admin@db:5432/tekovia"
 )
-engine = create_engine(DB, echo=False)
+engine = create_engine(DB_URL, echo=False)
 
-class Book(SQLModel, table=True):
-    id: int | None = Field(default=None, primary_key=True)
+# ---------------- modelos -------------------------
+class Event(SQLModel, table=True):
+    id: int | None = None                       # autoincremento
     titulo: str
-    autor: str
-    anio: int
+    fecha: str
+    ciudad: str
+    categoria: str
 
 SQLModel.metadata.create_all(engine)
 
-app = FastAPI()
+# ---------------- API -----------------------------
+app = FastAPI(title="Tekovia Guasu API")
 
-@app.get("/books")
-def list_books():
-    with Session(engine) as s:
-        return s.exec(select(Book)).all()
 
-class BookIn(BaseModel):
+class EventIn(BaseModel):
     titulo: str
-    autor: str
-    anio: int
+    fecha: str
+    ciudad: str
+    categoria: str
 
-@app.post("/books", status_code=201)
-def add_book(b: BookIn):
-    with Session(engine) as s:
-        book = Book.model_validate(b)
-        s.add(book)
-        s.commit()
-        s.refresh(book)
-        return book
+
+@app.get("/events", response_model=list[Event])
+def list_events() -> list[Event]:
+    with Session(engine) as db:
+        return db.exec(select(Event)).all()
+
+
+@app.post("/events", response_model=Event, status_code=201)
+def add_event(evt: EventIn):
+    with Session(engine) as db:
+        new = Event.model_validate(evt)
+        db.add(new)
+        db.commit()
+        db.refresh(new)
+        return new

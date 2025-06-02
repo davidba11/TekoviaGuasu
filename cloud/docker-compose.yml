@@ -1,22 +1,35 @@
 version: "3.9"
-services:
-  api:
-    build: ./api
-    ports:
-      - "8000:8000"
-    environment:
-      - DB_URL=postgresql+asyncpg://book:book@db:5432/books
-    depends_on:
-      - db
 
+services:
   db:
     image: postgres:16
     environment:
-      POSTGRES_DB: books
-      POSTGRES_USER: book
-      POSTGRES_PASSWORD: book
+      POSTGRES_DB: tekovia
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
     volumes:
-      - data:/var/lib/postgresql/data
+      - dbdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  api:
+    build: ./api
+    environment:
+      DB_URL: postgresql+psycopg2://postgres:admin@db:5432/tekovia
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+
+  frontend:
+    image: ghcr.io/reflex-dev/reflex-standalone:0.7.14
+    volumes:
+      - ../monolith/.web:/app/.web          # ruta al export local
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+
 
 volumes:
-  data:
+  dbdata:
